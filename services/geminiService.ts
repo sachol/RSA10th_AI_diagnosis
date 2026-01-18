@@ -2,7 +2,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { QuizResult } from "../types";
 
-// Fix: Refactored to use named parameters for GoogleGenAI initialization and process.env.API_KEY directly
 export const getMentorFeedback = async (result: QuizResult): Promise<string> => {
   const scorePercentage = (result.score / result.total) * 100;
   
@@ -17,11 +16,13 @@ export const getMentorFeedback = async (result: QuizResult): Promise<string> => 
     scoreContext = "완벽합니다! 이미 준비된 AI 전문가입니다. 부동산 시장의 판도를 바꾸는 혁신가로서 현장에서 동료들에게 선한 영향력을 끼치는 멘토가 되어달라고 격려하세요.";
   }
 
-  // Use process.env.API_KEY directly as per the guidelines
+  // API 키가 없을 때 제공되는 기본 편지 내용 (항상 고품질 유지)
   if (!process.env.API_KEY) {
-    let demoFeedback = `${result.userName} 공인중개사님, 진단에 참여해주셔서 감사합니다!\n\n현재 데모 모드로 작동 중입니다. ${result.score}점이라는 결과는 멋진 시작입니다. `;
-    if (scorePercentage > 70) demoFeedback += "이미 훌륭한 AI 감각을 갖추고 계시네요! ";
-    demoFeedback += "부동산 현장에서 AI는 단순한 도구가 아니라 중개사님의 가장 강력한 파트너가 될 것입니다. 실제 필드에서 AI라는 날개를 달고 성공하시는 그날까지 RSA가 함께하겠습니다. 현장에서 뵙겠습니다!";
+    let demoFeedback = `${result.userName} 공인중개사님, 진단에 참여해주셔서 감사합니다!\n\n현재 데모 모드로 작동 중이며, 교수님의 따뜻한 조언을 대신 전해드립니다. ${result.score}점이라는 결과는 인공지능이라는 거대한 물결에 용기 있게 올라탔다는 증거입니다. `;
+    if (scorePercentage > 75) demoFeedback += "\n\n이미 상당한 수준의 AI 감각을 갖추고 계시네요! 지금의 리터러시는 실무에서 압도적인 무기가 될 것입니다. ";
+    else demoFeedback += "\n\n조금은 낯설게 느껴질 수 있지만, 부동산 현장에서 AI는 중개사님의 가장 든든한 직원이 되어줄 것입니다. ";
+    
+    demoFeedback += "\n\n실제 필드에서 AI라는 날개를 달고 성공하시는 그날까지 RSA가 함께하겠습니다. '강의장'이 아닌 치열한 '부동산 현장'에서 승리하는 중개사님을 응원합니다. 현장에서 뵙겠습니다!";
     return demoFeedback;
   }
 
@@ -38,7 +39,7 @@ export const getMentorFeedback = async (result: QuizResult): Promise<string> => 
     [피드백 필수 포함 지침]
     1. 도입: 퀴즈 완료에 대한 진심 어린 축하와 공인중개사로서의 열정을 칭찬.
     2. 본론: 점수에 따른 맞춤형 분석을 제공하되, '점수' 자체보다 '앞으로의 변화'에 집중하여 조언.
-    3. 핵심: AI는 이제 선택이 아닌 필수 무기입니다. 챗GPT가 실제 "부동산 현장"에서 어떻게 든든한 직원이 될지 설명하세요.
+    3. 핵심: AI는 이제 선택이 아닌 필수 무기입니다. 챗GPT가 실제 "부동산 현장"에서 어떻게 든든한 직원이 될지 비전을 제시하세요.
     4. 마무리: "강의실"이 아닌, 실제 "치열한 부동산 현장(필드)"에서 AI라는 무기를 장착하고 당당하게 마주할 날을 기대하며 인사하십시오.
 
     [형식]
@@ -48,12 +49,10 @@ export const getMentorFeedback = async (result: QuizResult): Promise<string> => 
   `;
 
   try {
-    // Correctly using ai.models.generateContent with 'gemini-3-pro-preview' as per guidelines
     const response = await ai.models.generateContent({
       model: 'gemini-3-pro-preview',
       contents: prompt,
     });
-    // Accessing .text property directly as per guidelines (not a method)
     return response.text || "훌륭한 도전이었습니다! AI는 부동산 현장에서 여러분의 가장 강력한 파트너가 될 것입니다.";
   } catch (error) {
     console.error("Gemini API Error:", error);
